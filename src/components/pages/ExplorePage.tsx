@@ -5,10 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Search, Filter, Grid, List, Music, TrendingUp, Star, Users,
-  Play, Heart, ChevronLeft, ChevronRight, Sparkles, Zap
-} from 'lucide-react';
+import { Search, Filter, Grid2x2 as Grid, List, Music, TrendingUp, Star, Users, Play, Heart, ChevronLeft, ChevronRight, Sparkles, Zap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { toast } from 'sonner';
