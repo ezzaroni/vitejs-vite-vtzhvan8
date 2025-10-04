@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, User, Sun, Flame, Gift, Bell, BookOpen } from "lucide-react";
+import { Search, User, Sun, Flame, Gift, Bell, BookOpen, Menu, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,6 +42,7 @@ export const Navigation = ({ activeTab, onTabChange, className, onNavigationStar
   const [isRewardPanelOpen, setIsRewardPanelOpen] = useState(false);
   const [isProfileDataStable, setIsProfileDataStable] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { balance, tokenSymbol, forceRefreshBalance } = useToken();
   const { address } = useAccount();
@@ -300,12 +301,12 @@ export const Navigation = ({ activeTab, onTabChange, className, onNavigationStar
 
   return (
     <header className={cn(
-      "sticky top-0 z-50 w-full bg-transparent  shadow-none transition-all duration-300",
+      "sticky top-0 z-50 w-full bg-black/80 backdrop-blur-md shadow-lg transition-all duration-300",
       className
     )}>
-      <div className="container flex h-16 items-center px-6">
+      <div className="container flex h-16 items-center px-4 md:px-6">
         {/* Logo */}
-        <div className="flex items-center mr-8">
+        <div className="flex items-center mr-4 md:mr-8">
           <button
             onClick={() => handleNavigation("create", "/create")}
             className="cursor-pointer"
@@ -313,13 +314,21 @@ export const Navigation = ({ activeTab, onTabChange, className, onNavigationStar
             <img
               src={logoImage}
               alt="HiBeats Logo"
-              className="w-32 h-8 object-contain hover:opacity-80 transition-opacity"
+              className="w-24 h-6 md:w-32 md:h-8 object-contain hover:opacity-80 transition-opacity"
             />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex items-center space-x-2 mr-8">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="lg:hidden ml-auto p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+        >
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center space-x-2 mr-8">
           {navItems.map((item) => {
             const isActive = currentActiveTab === item.id;
             return (
@@ -342,8 +351,8 @@ export const Navigation = ({ activeTab, onTabChange, className, onNavigationStar
           })}
         </nav>
 
-        {/* Search Bar */}
-        <div className="flex-1 max-w-md mr-8">
+        {/* Desktop Search Bar */}
+        <div className="hidden lg:flex flex-1 max-w-md mr-8">
           <button
             onClick={() => setIsSearchModalOpen(true)}
             className="w-full flex items-center px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/20 rounded-full text-left transition-colors group"
@@ -360,8 +369,8 @@ export const Navigation = ({ activeTab, onTabChange, className, onNavigationStar
           </button>
         </div>
 
-        {/* User Info & Wallet */}
-        <div className="flex items-center space-x-4">
+        {/* Desktop User Info & Wallet */}
+        <div className="hidden lg:flex items-center space-x-4">
           {/* Daily Login & GM Button (only show when wallet connected) */}
           {address && (
             <div className="flex items-center space-x-3">
@@ -458,6 +467,129 @@ export const Navigation = ({ activeTab, onTabChange, className, onNavigationStar
           <WalletConnect />
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/95 backdrop-blur-lg">
+          <div className="container h-full overflow-y-auto py-20 px-4">
+            {/* Mobile Navigation */}
+            <nav className="space-y-2 mb-8">
+              {navItems.map((item) => {
+                const isActive = currentActiveTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      handleNavigation(item.id, item.path);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={cn(
+                      "w-full text-left px-6 py-4 rounded-xl text-lg font-medium transition-all",
+                      isActive
+                        ? "bg-primary/20 text-white border-l-4 border-primary"
+                        : "text-gray-300 hover:bg-white/10 hover:text-white"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      {item.icon && <item.icon className="w-5 h-5" />}
+                      <span>{item.label}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Mobile Search */}
+            <button
+              onClick={() => {
+                setIsSearchModalOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl text-left transition-colors mb-6"
+            >
+              <Search className="w-5 h-5 text-gray-400 mr-3" />
+              <span className="text-sm text-gray-400">
+                Search tracks, creators, genres...
+              </span>
+            </button>
+
+            {/* Mobile User Actions */}
+            {address && (
+              <div className="space-y-4 mb-6">
+                {/* GM Button */}
+                <Button
+                  onClick={() => {
+                    handleClaimDaily();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  disabled={!canClaim || dailyLoginLoading || !stats}
+                  className={cn(
+                    "w-full flex items-center justify-center space-x-2 rounded-xl px-4 py-3 bg-transparent border border-white/20",
+                    canClaim && stats
+                      ? "text-orange-200 hover:bg-orange-500/20"
+                      : "text-gray-400 cursor-not-allowed opacity-60"
+                  )}
+                >
+                  <Flame className={cn(
+                    "w-5 h-5",
+                    canClaim && stats ? "text-orange-400" : "text-gray-500"
+                  )} />
+                  <span className="text-sm font-medium">
+                    {!stats
+                      ? 'Loading...'
+                      : dailyLoginLoading
+                        ? 'sayGM..'
+                        : canClaim
+                          ? 'GM'
+                          : stats?.consecutiveLoginDays
+                            ? `Day ${stats.consecutiveLoginDays} ✓`
+                            : 'GM ✓'
+                    }
+                  </span>
+                </Button>
+
+                {/* Beats Balance */}
+                <button
+                  onClick={() => {
+                    setIsRewardPanelOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center space-x-2 bg-white/10 rounded-xl px-4 py-3 hover:bg-white/20 transition-colors relative"
+                >
+                  <img
+                    src={beatsImage}
+                    alt="Beats"
+                    className="w-5 h-5 object-contain"
+                  />
+                  <span className="text-white text-sm font-medium">
+                    {balance ? Number(formatEther(balance)).toFixed(2) : '0'} {tokenSymbol || 'BEATS'}
+                  </span>
+                  {hasNewRewards && (
+                    <div className="absolute top-2 right-2 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                  )}
+                </button>
+
+                {/* Notifications */}
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full flex items-center justify-center space-x-2 border border-white/20 rounded-xl px-4 py-3 hover:bg-white/10 transition-colors"
+                >
+                  <NotificationIcon
+                    variant="ghost"
+                    size="default"
+                    className="text-white"
+                  />
+                </button>
+              </div>
+            )}
+
+            {/* Wallet Connect */}
+            <div className="pt-4 border-t border-white/10">
+              <WalletConnect />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search Modal */}
       <SearchModal
